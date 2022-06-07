@@ -42,7 +42,7 @@ const renderTimeBlocks = () => {
         row.append(`<div class='col-8 col-md-8 col-lg-10 border-top border-bottom border-light' data-time='time-${time}'><textarea></textarea></div>`);
 
         // Save button column
-        row.append("<div class='col-2 col-md-2 col-lg-1 d-flex justify-content-center align-items-center saveBtn'><i class='far fa-save fa-2x'></i></div>")
+        row.append(`<div class='col-2 col-md-2 col-lg-1 d-flex justify-content-center align-items-center saveBtn' data-time='time-${time}'><i class='far fa-save fa-2x'></i></div>`)
     }
 };
 
@@ -53,6 +53,14 @@ const updatePlannerDataObject = () => {
         const value = $(this).children("div").children("textarea").val();
         plannerData[key] = value;
     });
+};
+
+// Update single time row before saving to local storage
+const updateOnePlannerDataObject = (attribute) => {
+    console.log(attribute)
+        const key = $(`div[data-time='${attribute}']`).attr("data-time");
+        const value = $(`div[data-time='${attribute}']`).children("textarea").val();
+        plannerData[key] = value;
 };
 
 // Render data stored in local storage into text area for each time slot
@@ -74,9 +82,16 @@ const loadData = () => {
 };
 
 // Function to save data to local storage
-const saveData = () => {
-    updatePlannerDataObject();
-    localStorage.setItem("planner-data", JSON.stringify(plannerData));
+const saveData = (attribute) => {
+    if (attribute === "save-all") {
+        updatePlannerDataObject();
+        localStorage.setItem("planner-data", JSON.stringify(plannerData));
+    } 
+    else {
+        updateOnePlannerDataObject(attribute);
+        localStorage.setItem("planner-data", JSON.stringify(plannerData));
+    }
+    
 };
 
 renderTimeBlocks();
@@ -85,5 +100,47 @@ loadData();
 
 // Event listener for clicks on save buttons to save data
 $(".saveBtn").on("click", function () {
-    saveData();
+    switch($(this).attr("data-time")) {
+        case "time-9am":
+            saveData("time-9am");
+            break;
+
+        case "time-10am":
+            saveData("time-10am");
+            break;
+
+        case "time-11am":
+            saveData("time-11am");
+            break;
+        
+        case "time-12pm":
+            saveData("time-12pm");
+            break;
+        
+        case "time-1pm":
+            saveData("time-1pm");
+            break;
+
+        case "time-2pm":
+            saveData("time-2pm");
+            break;
+
+        case "time-3pm":
+            saveData("time-3pm");
+            break;
+        
+        case "time-4pm":
+            saveData("time-4pm");
+            break;
+
+        case "time-5pm":
+            saveData("time=5pm");
+            break;
+
+        default:
+            saveData("save-all");
+            break;
+    };
+    
+    // saveData();
 })
