@@ -47,10 +47,8 @@ const renderTimeBlocks = () => {
     }
 };
 
-
 // Update single time row before saving to local storage
 const updatePlannerDataObject = (attribute) => {
-    console.log(attribute)
         const key = $(`div[data-time='${attribute}']`).attr("data-time");
         const value = $(`div[data-time='${attribute}']`).children("textarea").val();
         plannerData[key] = value;
@@ -84,6 +82,7 @@ const saveData = (attribute) => {
 const changeBgColor = () => {
     const currentTime = Number(moment().format("H"));
     
+    // Iterate through each row, remove previous class and add class to change bg color
     containerEl.children(".row").each(function () {
         const rowTime = parseInt($(this).attr("data-military-time"));
         $(this).children("div").children("textarea").removeClass();
@@ -106,12 +105,15 @@ loadData();
 
 changeBgColor();
 
+// time delays: delay is for an hour, delayToNextHour calculates the delay to the next hour
 const delay = 60 * 60 * 1000;
-const delayToNextHour = 60 - parseInt(moment().format("LT").slice(3)) * 1000;
+const delayToNextHour = (60 - parseInt(moment().format("LT").slice(3))) * 60000;
 
-setInterval(function() {
-    setInterval(changeBgColor, delayToNextHour);
-}, delay)
+// Audit's time squares every hour. First calculate delay to the next hour with set timeout then run every hour with set interval
+setTimeout(function() {
+    changeBgColor();
+    setInterval(changeBgColor, delay);
+}, delayToNextHour);
 
 // Event listener for clicks on save buttons to save data
 $(".saveBtn").on("click", function () {
