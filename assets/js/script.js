@@ -16,6 +16,7 @@ const renderTimeBlocks = () => {
     // Start i at 9 because first time block starts at 9 am
     for (let i = 9; i < 18; i++) {
         let time;
+        let militaryTime = i;
         if (i < 12) {
             time = `${i}am`
         } 
@@ -28,7 +29,7 @@ const renderTimeBlocks = () => {
         }
         
         // Append rows to container
-        containerEl.append(`<div class='row no-gutters d-flex justify-content-center' data-time='time-${time}'</div>`)
+        containerEl.append(`<div class='row no-gutters d-flex justify-content-center' data-time='time-${time}' data-military-time='${militaryTime}'</div>`)
 
         // Select row to make sure columns are appended to the correct row
         const row = $(`.row[data-time='time-${time}']`);
@@ -46,17 +47,9 @@ const renderTimeBlocks = () => {
     }
 };
 
-// Function to update the plannaer data object before saving to local storage
-const updatePlannerDataObject = () => {
-    containerEl.children(".row").each(function () {
-        const key = $(this).children("div").attr("data-time");
-        const value = $(this).children("div").children("textarea").val();
-        plannerData[key] = value;
-    });
-};
 
 // Update single time row before saving to local storage
-const updateOnePlannerDataObject = (attribute) => {
+const updatePlannerDataObject = (attribute) => {
     console.log(attribute)
         const key = $(`div[data-time='${attribute}']`).attr("data-time");
         const value = $(`div[data-time='${attribute}']`).children("textarea").val();
@@ -83,64 +76,44 @@ const loadData = () => {
 
 // Function to save data to local storage
 const saveData = (attribute) => {
-    if (attribute === "save-all") {
-        updatePlannerDataObject();
-        localStorage.setItem("planner-data", JSON.stringify(plannerData));
-    } 
-    else {
-        updateOnePlannerDataObject(attribute);
-        localStorage.setItem("planner-data", JSON.stringify(plannerData));
-    }
+        updatePlannerDataObject(attribute);
+        localStorage.setItem("planner-data", JSON.stringify(plannerData)); 
+};
+
+// Function to change background color of textarea
+const changeBgColor = () => {
+    const currentTime = Number(moment().format("H"));
     
+    containerEl.children(".row").each(function () {
+        const rowTime = parseInt($(this).attr("data-military-time"));
+        $(this).children("div").children("textarea").removeClass();
+
+        if (rowTime > currentTime ) {
+            $(this).children("div").children("textarea").addClass("future");
+        }
+        else if (rowTime === currentTime) {
+            $(this).children("div").children("textarea").addClass("present");
+        }
+        else {
+            $(this).children("div").children("textarea").addClass("past");
+        }
+    });
 };
 
 renderTimeBlocks();
 
 loadData();
 
+changeBgColor();
+
+const delay = 60 * 60 * 1000;
+const delayToNextHour = 60 - parseInt(moment().format("LT").slice(3)) * 1000;
+
+setInterval(function() {
+    setInterval(changeBgColor, delayToNextHour);
+}, delay)
+
 // Event listener for clicks on save buttons to save data
 $(".saveBtn").on("click", function () {
-    switch($(this).attr("data-time")) {
-        case "time-9am":
-            saveData("time-9am");
-            break;
-
-        case "time-10am":
-            saveData("time-10am");
-            break;
-
-        case "time-11am":
-            saveData("time-11am");
-            break;
-        
-        case "time-12pm":
-            saveData("time-12pm");
-            break;
-        
-        case "time-1pm":
-            saveData("time-1pm");
-            break;
-
-        case "time-2pm":
-            saveData("time-2pm");
-            break;
-
-        case "time-3pm":
-            saveData("time-3pm");
-            break;
-        
-        case "time-4pm":
-            saveData("time-4pm");
-            break;
-
-        case "time-5pm":
-            saveData("time=5pm");
-            break;
-
-        default:
-            saveData("save-all");
-            break;
-    };
-    
-    // saveData();
-})
+    saveData($(this).attr("data-time"));
+});
